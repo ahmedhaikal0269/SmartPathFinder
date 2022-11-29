@@ -1,0 +1,10 @@
+.locationNode{
+    -fx-font-size: 15;
+    -fx-font-weight: bold ;
+    -fx-padding: 0 4 0 4;
+
+    -fx-background-color: lightblue;
+    -fx-background-radius: 22;
+    -fx-border-color: black;
+    -fx-border-radius: 22;
+}
