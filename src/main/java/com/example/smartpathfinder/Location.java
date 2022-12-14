@@ -15,33 +15,50 @@ import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
  */
 public class Location extends Rectangle {
 
-    private static final double WIDTH = 15;
-    private static final double HEIGHT = 15;
-    private final Color color = Color.LIGHTBLUE;
-    Location nextStop;
-
+    private int column;
+    private int row;
     private static int count = 0;
+    private int distanceToNextStop;
+    Location nextStop;
     public int locationID;
 
-    public Location() {
-
-        setWidth(WIDTH);
-        setHeight(HEIGHT);
-        setFill(color);
-        locationID = count++;
+    public Location(int x, int y, int width, int height, int color) {
+        row = x;
+        column = y;
+        setWidth(width);
+        setHeight(height);
+        if(color == 1) {
+            setFill(Color.PURPLE);
+            locationID = count++;
+        }
+        else
+            setFill(Color.LIGHTBLUE);
+        distanceToNextStop = Integer.MAX_VALUE;
         this.nextStop = null;
     }
 
-    public Color getColor() {
-        return color;
+    public int getColumn() {
+        return column;
+    }
+
+    public void setColumn(int column) {
+        this.column = column;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
+    }
+
+    public static void setCount(int newCount) {
+        count = newCount;
     }
 
     public static int getCount() {
         return count;
-    }
-
-    public static void setCount(int count) {
-        Location.count = count;
     }
 
     public int getLocationID() {
@@ -50,6 +67,14 @@ public class Location extends Rectangle {
 
     public void setLocationID(int locationID) {
         this.locationID = locationID;
+    }
+
+    public void setDistanceToNextStop(int distanceToNextStop) {
+        this.distanceToNextStop = distanceToNextStop;
+    }
+
+    public int getDistanceToNextStop() {
+        return distanceToNextStop;
     }
 
     public Location getNextStop() {

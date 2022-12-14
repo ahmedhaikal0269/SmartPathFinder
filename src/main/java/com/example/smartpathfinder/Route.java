@@ -1,23 +1,70 @@
 package com.example.smartpathfinder;
 
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class Route{
 
-    private ArrayList<Location> unvisitedLocations;
     private ArrayList<Location> visitedLocations;
     private Location headOfRoute;
     private int calculatedDistance = 0;
+    private HashSet<Location> visitedStops;
+    private HashMap<Integer, HashSet<Integer>> all_stops; // this is to store all stops so that they don't get colored with the route
 
-    public Route(ArrayList<Location> unvisitedLocations){
-        this.unvisitedLocations = unvisitedLocations;
+    public Route(){
         visitedLocations = new ArrayList<>();
-        headOfRoute = unvisitedLocations.get(0);
+        all_stops = new HashMap<>();
+        headOfRoute = null;
     }
 
+    public void getSmartRoute(ArrayList<Location> all_locations){
+        visitedStops = new HashSet<>();
+        headOfRoute = all_locations.get(0);
+        Location runner = headOfRoute;
+        visitedStops.add(runner);
+        while(visitedStops.size() != all_locations.size()){
+            int distanceFound = Integer.MAX_VALUE;
+            for(int i = 0; i < all_locations.size(); i++){
+                Location currentLoc = all_locations.get(i);
+                //add location to all stops hashmap
+                if(!all_stops.containsKey(currentLoc.getRow())){
+                    all_stops.put(currentLoc.getRow(), new HashSet<>());
+                }
+                if(!visitedStops.contains(currentLoc)){
+                    int distance = getDistance(runner, currentLoc);
+                    if(distance < runner.getDistanceToNextStop() && distance < distanceFound){
+                        distanceFound = distance;
+                        runner.nextStop = currentLoc;
+                    }
+                }
+            }
+            runner.setDistanceToNextStop(distanceFound);
+            runner = runner.nextStop;
+            visitedStops.add(runner);
+        }
+
+
+        Location runThrow = headOfRoute;
+        while(runThrow != null){
+            System.out.println(runThrow.getLocationID());
+            runThrow = runThrow.nextStop;
+        }
+
+    }
+
+    public int getDistance(Location origin, Location target){
+        int originCol = Board.getColumnIndex(origin);
+        int originRow = Board.getRowIndex(origin);
+        int targetCol = Board.getColumnIndex(target);
+        int targetRow = Board.getRowIndex(target);
+        return Math.abs(originCol - targetCol) + Math.abs(originRow - targetRow);
+    }
+
+    public Location getHeadOfRoute() {
+        return headOfRoute;
+    }
+/*
     public void calculateRoute(){
         calculatedDistance = 0;
         for(int i = 0; i < unvisitedLocations.size()-1; i++){
@@ -30,6 +77,67 @@ public class Route{
             System.out.println("total distance was " + calculatedDistance);
             calculatedDistance += dist;
             System.out.println("total distance is " + calculatedDistance);
+        }
+    }
+
+    public void getEmBoy(){
+        if(unvisitedLocations.get(0).getLocationID() == 0){
+            headOfRoute = unvisitedLocations.get(0);
+            visitedStops.add(unvisitedLocations.get(0));
+        }
+        for(int i = 0; i < unvisitedLocations.size(); i++){
+            Location runner = headOfRoute;
+            Location closest = headOfRoute;
+            Location stop = unvisitedLocations.get(i);
+            int lowest_distance_found = Integer.MAX_VALUE;
+            if(!visitedStops.contains(stop)){
+                visitedStops.add(stop);
+                while(runner != null){
+                    int stopRow = Board.getRowIndex(stop);
+                    int stopCol = Board.getColumnIndex(stop);
+                    int runnerRow = Board.getRowIndex(runner);
+                    int runnerCol = Board.getColumnIndex(runner);
+                    int distance = Math.abs(stopRow - runnerRow) + Math.abs(stopCol - runnerCol);
+                    if(distance < runner.getDistanceToNextStop() && distance < lowest_distance_found){
+                        runner.setDistanceToNextStop(distance);
+                        closest = runner;
+                        lowest_distance_found = distance;
+                    }
+                    runner = runner.nextStop;
+                }
+                stop.nextStop = closest.nextStop;
+                closest.nextStop = stop;
+            }
+        }
+    }
+    public void createRoute(){
+        for(int i = 1; i < unvisitedLocations.size(); i++){
+            System.out.println("inside for loop");
+            Location loc = unvisitedLocations.get(i);
+            int nextStopCol = Board.getColumnIndex(loc);
+            int nextStopRow = Board.getRowIndex(loc);
+            //int next = Integer.MAX_VALUE;
+            Location runner = headOfRoute;
+            Location closest = headOfRoute;
+
+            while(runner != null){
+                System.out.println("inside while loop");
+                int runnerCol = Board.getColumnIndex(runner);
+                int runnerRow = Board.getRowIndex(runner);
+                int distance = Math.abs(nextStopCol - runnerCol) + Math.abs(nextStopRow - runnerRow);
+                if(distance <= runner.getDistanceToNextStop()){
+                    runner.setDistanceToNextStop(distance);
+                    closest = runner;
+                }
+                runner = runner.nextStop;
+            }
+            loc.nextStop = closest.nextStop;
+            closest.nextStop = loc;
+        }
+        Location runThrow = headOfRoute;
+        while(runThrow != null){
+            System.out.println(runThrow.getLocationID());
+            runThrow = runThrow.nextStop;
         }
     }
 
@@ -73,26 +181,81 @@ public class Route{
     }
 
 
-    public void draw() {
-        if(!unvisitedLocations.isEmpty()){
 
+    public void getRoute() {
+        headOfRoute = unvisitedLocations.get(0);
+        Location loc = headOfRoute;
+        visitedStops.add(loc);
+        while(visitedStops.size() != unvisitedLocations.size()){
+            int closestDistance = Integer.MAX_VALUE;
+            int row = Board.getRowIndex(loc);
+            int col = Board.getColumnIndex(loc);
+            for(int i = 0; i < unvisitedLocations.size(); i++){
+                Location currentLoc = unvisitedLocations.get(i);
+                if(!visitedStops.contains(currentLoc)){
+                    int currentRow = Board.getRowIndex(currentLoc);
+                    int currentCol = Board.getColumnIndex(currentLoc);
+                    int distance = Math.abs(row - currentRow) + Math.abs(col - currentCol);
+                    if(distance < closestDistance) {
+                        closestDistance = distance;
+                        loc.nextStop = currentLoc;
+                    }
+                }
+            }
+            loc.setDistanceToNextStop(closestDistance);
+            loc = loc.nextStop;
+            visitedStops.add(loc);
         }
+        Location runThrow = headOfRoute;
+        while(runThrow != null){
+            System.out.println(runThrow.getLocationID());
+            runThrow = runThrow.nextStop;
+        }
+
     }
 
-    void paint(Location from, Location to){
-        //paint horizontal
-        int origin_col = Board.getColumnIndex(from);
-        int origin_rows = Board.getColumnIndex(from);
-        int targetCol = Board.getColumnIndex(to);
-        int targetRow = Board.getRowIndex(to);
-
-        while(origin_col < targetCol){
-           Rectangle spot = new Rectangle(15,15, Color.YELLOW);
-
-        }
-
-        //paint vertical
-
-
+    public void updateRoute(){
+         for(int i = 0; i < unvisitedLocations.size(); i++){
+             Location loc = headOfRoute;
+             Location closest = headOfRoute;
+             Location currentLoc = unvisitedLocations.get(i);
+             if(!visitedStops.contains(currentLoc)){
+                 visitedStops.add(currentLoc);
+                 int currentRow = Board.getRowIndex(currentLoc);
+                 int currentCol = Board.getColumnIndex(currentLoc);
+                 int dist = Integer.MAX_VALUE;
+                 System.out.println("i is: " + i + " and location id: " + currentLoc.getLocationID());
+                 while(loc != null){
+                     System.out.println("loc is: " + loc.getLocationID());
+                     int row = Board.getRowIndex(loc);
+                     int col = Board.getColumnIndex(loc);
+                     int closestDistance = loc.getDistanceToNextStop();
+                     int distance = Math.abs(row - currentRow) + Math.abs(col - currentCol);
+                     if(distance < closestDistance && distance < dist) {
+                         dist = distance;
+                         closest = loc;
+                     }
+                     loc = loc.nextStop;
+                 }
+                 closest.setDistanceToNextStop(dist);
+                 currentLoc.nextStop = closest.nextStop;
+                 if(currentLoc.nextStop != null){
+                     Location nextNext = currentLoc.nextStop;
+                     int row = Board.getRowIndex(nextNext);
+                     int col = Board.getColumnIndex(nextNext);
+                     int distance = Math.abs(row - currentRow) + Math.abs(col - currentCol);
+                     currentLoc.setDistanceToNextStop(distance);
+                 }
+                 closest.nextStop = currentLoc;
+             }
+         }
+         Location runThrough = headOfRoute;
+         while(runThrough != null){
+             System.out.println(runThrough.getLocationID());
+             System.out.println("loc = " + runThrough.getLocationID() + " and dist to next stop is: " + runThrough.getDistanceToNextStop());
+             runThrough = runThrough.nextStop;
+         }
     }
+
+ */
 }

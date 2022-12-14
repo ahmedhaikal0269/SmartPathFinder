@@ -33,10 +33,4 @@ public class WelcomeScreen extends Application {
         mainStage.setScene(scene);
     }
 
-    public void exit() throws IOException {
-        FXMLLoader root = new FXMLLoader(getClass().getResource("welcome-screen.fxml"));
-        changeScene(new Scene(root.load()));
-    }
-
-
 }

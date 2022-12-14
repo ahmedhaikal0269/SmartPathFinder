@@ -9,50 +9,54 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
-public class MainScreen extends HBox {
+public class MainScreen extends VBox {
 
     private static final MainScreen mainScreen = new MainScreen();
-    private Button createRoute, smartRoute, reset, exit;
+    private Button createRoute, clearPath, clearMap, exit;
     private Board map;
-    private int cell_width = Board.getCellWidth();
-    private int cell_height = Board.getCellHeight();
-    private int cell_gap = Board.getGap();
+    private final int CELL_WIDTH = 15;
+    private final int CELL_HEIGHT = 15;
+    private final int CELL_GAP = 1;
     private ArrayList<Location> unvisitedLocations;
+    private HashSet<Location> allStops;
+    private Route route;
 
     private MainScreen(){
         unvisitedLocations = new ArrayList<>();
+        allStops = new HashSet<>();
         createRoute = new Button("Create Route");
-        smartRoute = new Button("Smart Route");
-        reset = new Button("Reset");
+        clearPath = new Button("Clear Path");
+        clearMap = new Button("Clear Map");
         exit = new Button("Exit");
     }
 
     public static MainScreen getInstance(){
         mainScreen.setSpacing(2);
-        VBox controlPanel = mainScreen.createControlPanel();
+        HBox controlPanel = mainScreen.createControlPanel();
         Board map = mainScreen.getMap();
+        map.initializeGraph();
         mainScreen.getChildren().addAll(controlPanel, map);
         return mainScreen;
     }
 
     public Board getMap(){
-        map = Board.initializeGraph();
+        map = new Board(CELL_WIDTH, CELL_HEIGHT, CELL_GAP);
         map.setOnMousePressed(mainScreen::onMapMousePressed);
         map.setOnMouseDragged(mainScreen::onLocationDragged);
         return map;
     }
 
 
-    public VBox createControlPanel(){
-        VBox controlPanel = new VBox();
+    public HBox createControlPanel(){
+        HBox controlPanel = new HBox();
         controlPanel.setSpacing(30);
         controlPanel.setAlignment(Pos.CENTER);
         buttonFunctions();
-        controlPanel.getChildren().addAll(createRoute, smartRoute, reset, exit);
+        controlPanel.getChildren().addAll(createRoute, clearPath, clearMap, exit);
         return controlPanel;
     }
 
@@ -60,25 +64,35 @@ public class MainScreen extends HBox {
         createRoute.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                System.out.println("Regular route: ");
-                Route route = new Route(unvisitedLocations);
-                route.calculateRoute();
-                route.print();
+                System.out.println("smartest route: ");
+                route = new Route();
+                route.getSmartRoute(unvisitedLocations);
+                System.out.println("all stops size: " + unvisitedLocations.size());
+                map.clearPath(unvisitedLocations);
+                ArrayList<Location> pathNodes = map.findPathNodes(route.getHeadOfRoute(), unvisitedLocations);
+                map.paint(pathNodes);
             }
         });
-        smartRoute.setOnAction(new EventHandler<ActionEvent>() {
+        clearPath.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                System.out.println("Here is the shortest path: ");
-                Route route = new Route(unvisitedLocations);
-                route.calculateSmartRoute();
-                route.printRoute();
+                map.clearPath(unvisitedLocations);
             }
         });
-        reset.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
 
+        /*
+         * This button should restart everything so a new grid map will be created and locations will start from 0
+         */
+
+        clearMap.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                mainScreen.getChildren().remove(map);
+                map = mainScreen.getMap();
+                map.initializeGraph();
+                mainScreen.getChildren().add(map);
+                unvisitedLocations.clear();
+                Location.setCount(0);
             }
         });
         exit.setOnAction(new EventHandler<ActionEvent>() {
@@ -89,24 +103,30 @@ public class MainScreen extends HBox {
         });
     }
 
+    void printNodes(ArrayList<Location> pathNodes){
+        for(int i = 0; i < pathNodes.size(); i++){
+            System.out.println("row: " + pathNodes.get(i).getRow() + " col: " + pathNodes.get(i).getColumn());
+        }
+    }
+
     private void onMapMousePressed(MouseEvent mouseEvent){
-        int rows = (int)(mouseEvent.getX()/(cell_width + cell_gap));
-        int cols = (int)(mouseEvent.getY()/(cell_height + cell_gap));
+        int rows = (int)(mouseEvent.getX()/(CELL_WIDTH + CELL_GAP));
+        int cols = (int)(mouseEvent.getY()/(CELL_HEIGHT + CELL_GAP));
 
-        Location location = new Location();
-        map.add(location, rows, cols);
+        //send color code 1 for location color, 2 for path color
+        Location location = new Location(rows, cols, CELL_WIDTH, CELL_HEIGHT, 1);
+        if(!unvisitedLocations.contains(location)) {
+            map.add(location, rows, cols);
+            Text lbl = new Text("" + location.getLocationID());
+            lbl.setFill(Color.YELLOW);
+            map.setAlignment(Pos.CENTER);
+            map.add(lbl, rows, cols, 2, 1);
+            unvisitedLocations.add(location);
+        }
 
-        Text lbl = new Text("" + location.getLocationID());
-        lbl.setFill(Color.BLACK);
-        lbl.setTextAlignment(TextAlignment.CENTER);
-        map.setAlignment(Pos.CENTER);
-        map.add(lbl, rows, cols, 2, 1);
-        unvisitedLocations.add(location);
     }
 
     private void onLocationDragged(MouseEvent e) {
-        int rows = (int)(e.getX()/(cell_width + cell_gap));
-        int cols = (int)(e.getY()/(cell_height + cell_gap));
 
     }
 }
