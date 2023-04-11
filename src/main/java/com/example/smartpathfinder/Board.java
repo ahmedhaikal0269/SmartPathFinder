@@ -90,7 +90,7 @@ public class Board extends GridPane {
         }
     }
 
-    public void paint(ArrayList<Location> pathNodes){
+    public void drawRoute(ArrayList<Location> pathNodes){
         for(int i = 0; i < pathNodes.size(); i++)
             add(pathNodes.get(i), pathNodes.get(i).getRow(), pathNodes.get(i).getColumn());
     }

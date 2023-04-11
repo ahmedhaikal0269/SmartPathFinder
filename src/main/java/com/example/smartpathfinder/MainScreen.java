@@ -70,7 +70,7 @@ public class MainScreen extends VBox {
                 System.out.println("all stops size: " + unvisitedLocations.size());
                 map.clearPath(unvisitedLocations);
                 ArrayList<Location> pathNodes = map.findPathNodes(route.getHeadOfRoute(), unvisitedLocations);
-                map.paint(pathNodes);
+                map.drawRoute(pathNodes);
             }
         });
         clearPath.setOnAction(new EventHandler<ActionEvent>() {

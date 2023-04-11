@@ -43,14 +43,6 @@ public class Route{
             runner = runner.nextStop;
             visitedStops.add(runner);
         }
-
-
-        Location runThrow = headOfRoute;
-        while(runThrow != null){
-            System.out.println(runThrow.getLocationID());
-            runThrow = runThrow.nextStop;
-        }
-
     }
 
     public int getDistance(Location origin, Location target){
@@ -59,6 +51,14 @@ public class Route{
         int targetCol = Board.getColumnIndex(target);
         int targetRow = Board.getRowIndex(target);
         return Math.abs(originCol - targetCol) + Math.abs(originRow - targetRow);
+    }
+
+    public void printRoute(){
+        Location runThrow = headOfRoute;
+        while(runThrow != null){
+            System.out.println(runThrow.getLocationID());
+            runThrow = runThrow.nextStop;
+        }
     }
 
     public Location getHeadOfRoute() {
