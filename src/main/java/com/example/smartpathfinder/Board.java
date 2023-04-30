@@ -29,7 +29,7 @@ public class Board extends GridPane {
             for(int j = 0; j < height; j++)
             {
                 Rectangle rect = new Rectangle(cellWidth, cellHeight);
-                rect.setVisible(true);
+                //rect.setVisible(true);
                 rect.setFill(Color.BEIGE);
                 add(rect, i, j);
             }
